@@ -42,30 +42,29 @@ const studentProjectController = {
   addSemesterProject: async (req, res) => {
     try {
       const userId = req.params.userId;
-      const { semesterNumber, courseCode, courseName, projectName, projectDescription, technologies } = req.body;
+        const { semesterNumber, courseCode, courseName, projectName, projectDescription, languages, frontendFrameworks, backendFrameworks } = req.body;
 
-      console.log('🔹 ADDING PROJECT FOR USER:', userId, { semesterNumber, courseCode, projectName });
+        console.log('🔹 ADDING PROJECT FOR USER:', userId, { semesterNumber, courseCode, projectName });
 
-      if (!semesterNumber || !courseCode || !courseName || !projectName || !projectDescription || !technologies) {
-        return res.status(400).json({ error: 'All fields are required' });
-      }
+        if (!semesterNumber || !courseCode || !courseName || !projectName || !projectDescription || !languages) {
+          return res.status(400).json({ error: 'All fields are required' });
+        }
 
-      const studentId = await ensureStudentRecord(userId);
+        const studentId = await ensureStudentRecord(userId);
 
-      // Insert or update project
-      const [result] = await pool.execute(
-        `INSERT INTO student_projects 
-         (student_id, semester_number, course_code, course_name, project_name, project_description, technologies)
-         VALUES (?, ?, ?, ?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE
-         project_name = VALUES(project_name),
-         project_description = VALUES(project_description),
-         technologies = VALUES(technologies),
-         updated_at = NOW()`,
-        [studentId, semesterNumber, courseCode, courseName, projectName, projectDescription, technologies]
-      );
-
-      console.log('✅ PROJECT SAVED');
+        // Insert or update project
+        const [result] = await pool.execute(
+          `INSERT INTO student_projects 
+           (student_id, semester_number, course_code, course_name, project_name, project_description, languages, frontend_frameworks, backend_frameworks)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON DUPLICATE KEY UPDATE
+           project_name = VALUES(project_name),
+           project_description = VALUES(project_description),
+           languages = VALUES(languages),
+           frontend_frameworks = VALUES(frontend_frameworks),
+           backend_frameworks = VALUES(backend_frameworks),
+           updated_at = NOW()`,
+          [studentId, semesterNumber, courseCode, courseName, projectName, projectDescription, languages, frontendFrameworks || '', backendFrameworks || '']
       res.json({ success: true, message: 'Project saved successfully', projectId: result.insertId });
     } catch (error) {
       console.error('❌ ADD PROJECT ERROR:', error.message);
@@ -112,7 +111,9 @@ const studentProjectController = {
       );
 
       const completedSemesters = projectSemesters.map(row => row.semester_number);
-      const isComplete = completedSemesters.length > 0; // At least one semester must be complete
+      // Require at least 1 project for each semester up to currentSemester - 1
+      const requiredCount = Math.max(1, currentSemester - 1);
+      const isComplete = completedSemesters.length >= requiredCount;
 
       console.log('✅ PROFILE CHECK - Completed semesters:', completedSemesters);
       res.json({
@@ -166,14 +167,9 @@ const studentProjectController = {
         projectContext += `- Course: ${proj.course_code} - ${proj.course_name}\n`;
         projectContext += `- Project: ${proj.project_name}\n`;
         projectContext += `- Description: ${proj.project_description}\n`;
-        projectContext += `- Technologies: ${proj.technologies}\n\n`;
-      });
-
-      const interestContext = student.area_of_interest ? `\nStudent Interests: ${student.area_of_interest}` : '';
-
-      const prompt = `You are an expert academic advisor. Based on the following student's project history and interests, generate 5 unique, innovative Final Year Project (FYP) ideas.
-
-${projectContext}
+          projectContext += `- Languages: ${proj.languages}\n`;
+          projectContext += `- Frontend: ${proj.frontend_frameworks}\n`;
+          projectContext += `- Backend: ${proj.backend_frameworks}\n\n`;
 ${interestContext}
 
 For each FYP idea, provide:
@@ -242,10 +238,11 @@ Format each idea clearly and make them progressively more complex. They should l
 function parseGroqResponse(content, projects) {
   // Extract technologies used by student
   const allTechs = projects
-    .flatMap(p => p.technologies.split(',').map(t => t.trim()))
-    .filter((v, i, a) => a.indexOf(v) === i); // unique
-
-  // Parse response and create ideas with references to student background
+      .flatMap(p => [
+        ...(p.languages ? p.languages.split(',') : []),
+        ...(p.frontend_frameworks ? p.frontend_frameworks.split(',') : []),
+        ...(p.backend_frameworks ? p.backend_frameworks.split(',') : [])
+      ].map(t => t.trim()).filter(Boolean))
   const ideas = [];
   const sections = content.split(/Idea \d+:|Project \d+:|Idea:/i).slice(1);
 

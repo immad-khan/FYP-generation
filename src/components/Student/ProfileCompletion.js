@@ -25,7 +25,9 @@ const ProfileCompletion = ({ userId, onComplete }) => {
     courseName: '',
     projectName: '',
     projectDescription: '',
-    technologies: '',
+    languages: '',
+    frontendFrameworks: '',
+    backendFrameworks: '',
   });
 
   // Fetch existing projects
@@ -109,7 +111,9 @@ const ProfileCompletion = ({ userId, onComplete }) => {
         courseName: formData.courseName,
         projectName: formData.projectName,
         projectDescription: formData.projectDescription,
-        technologies: formData.technologies,
+        languages: formData.languages,
+        frontendFrameworks: formData.frontendFrameworks,
+        backendFrameworks: formData.backendFrameworks,
       };
 
       await studentAPI.saveProject(userId, projectData);
@@ -121,7 +125,9 @@ const ProfileCompletion = ({ userId, onComplete }) => {
         courseName: '',
         projectName: '',
         projectDescription: '',
-        technologies: '',
+        languages: '',
+        frontendFrameworks: '',
+        backendFrameworks: '',
       });
       
       await fetchProjects();
@@ -228,12 +234,39 @@ const ProfileCompletion = ({ userId, onComplete }) => {
                               <p className="text-gray-300">{project.project_description}</p>
                             </div>
                           )}
-                          {project.technologies && (
+                          
+                          {project.languages && (
                             <div>
-                              <p className="text-gray-500 font-medium text-xs uppercase mb-2">Technologies</p>
+                              <p className="text-gray-500 font-medium text-xs uppercase mb-2">Languages</p>
                               <div className="flex flex-wrap gap-2">
-                                {project.technologies.split(',').map((tech, idx) => (
+                                {project.languages.split(',').map((tech, idx) => (
+                                  <span key={idx} className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-lg text-xs font-semibold border border-blue-500/30">
+                                    {tech.trim()}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {project.frontend_frameworks && (
+                            <div>
+                              <p className="text-gray-500 font-medium text-xs uppercase mb-2">Frontend</p>
+                              <div className="flex flex-wrap gap-2">
+                                {project.frontend_frameworks.split(',').map((tech, idx) => (
                                   <span key={idx} className="bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-lg text-xs font-semibold border border-cyan-500/30">
+                                    {tech.trim()}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {project.backend_frameworks && (
+                            <div>
+                              <p className="text-gray-500 font-medium text-xs uppercase mb-2">Backend</p>
+                              <div className="flex flex-wrap gap-2">
+                                {project.backend_frameworks.split(',').map((tech, idx) => (
+                                  <span key={idx} className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-lg text-xs font-semibold border border-purple-500/30">
                                     {tech.trim()}
                                   </span>
                                 ))}
@@ -297,7 +330,7 @@ const ProfileCompletion = ({ userId, onComplete }) => {
               <CardDescription className="text-gray-400 mt-2">
                 {currentStep === 'semester' && 'Select the semester number for this project'}
                 {currentStep === 'project' && 'Tell us about your project'}
-                {currentStep === 'course' && 'Add course information and technologies used'}
+                  {currentStep === 'course' && 'Add course information and tools used'}
                 {currentStep === 'review' && 'Review all details before saving'}
               </CardDescription>
             </CardHeader>
@@ -382,16 +415,40 @@ const ProfileCompletion = ({ userId, onComplete }) => {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-gray-300 font-semibold mb-3">Technologies Used</label>
-                    <Input
-                      type="text"
-                      name="technologies"
-                      value={formData.technologies}
-                      onChange={handleInputChange}
-                      placeholder="E.g., React, Node.js, MongoDB (comma-separated)"
-                      className="bg-[#1A1A2E] border-white/10 text-white placeholder-gray-600 h-12"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-gray-300 font-semibold mb-3">Languages</label>
+                      <Input
+                        type="text"
+                        name="languages"
+                        value={formData.languages}
+                        onChange={handleInputChange}
+                        placeholder="E.g., Python, TS"
+                        className="bg-[#1A1A2E] border-white/10 text-white placeholder-gray-600 h-12"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 font-semibold mb-3">Frontend</label>
+                      <Input
+                        type="text"
+                        name="frontendFrameworks"
+                        value={formData.frontendFrameworks}
+                        onChange={handleInputChange}
+                        placeholder="E.g., React, Vue"
+                        className="bg-[#1A1A2E] border-white/10 text-white placeholder-gray-600 h-12"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-300 font-semibold mb-3">Backend</label>
+                      <Input
+                        type="text"
+                        name="backendFrameworks"
+                        value={formData.backendFrameworks}
+                        onChange={handleInputChange}
+                        placeholder="E.g., Node, Django"
+                        className="bg-[#1A1A2E] border-white/10 text-white placeholder-gray-600 h-12"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -424,12 +481,38 @@ const ProfileCompletion = ({ userId, onComplete }) => {
                       </p>
                     </div>
 
-                    {formData.technologies && (
+                    {formData.languages && (
                       <div className="border-t border-white/10 pt-4">
-                        <p className="text-gray-500 text-sm uppercase font-semibold mb-2">Technologies</p>
+                        <p className="text-gray-500 text-sm uppercase font-semibold mb-2">Languages</p>
                         <div className="flex flex-wrap gap-2">
-                          {formData.technologies.split(',').map((tech, idx) => (
+                          {formData.languages.split(',').map((tech, idx) => (
+                            <span key={idx} className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-lg text-sm font-semibold border border-blue-500/30">
+                              {tech.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {formData.frontendFrameworks && (
+                      <div className="border-t border-white/10 pt-4">
+                        <p className="text-gray-500 text-sm uppercase font-semibold mb-2">Frontend</p>
+                        <div className="flex flex-wrap gap-2">
+                          {formData.frontendFrameworks.split(',').map((tech, idx) => (
                             <span key={idx} className="bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-lg text-sm font-semibold border border-cyan-500/30">
+                              {tech.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {formData.backendFrameworks && (
+                      <div className="border-t border-white/10 pt-4">
+                        <p className="text-gray-500 text-sm uppercase font-semibold mb-2">Backend</p>
+                        <div className="flex flex-wrap gap-2">
+                          {formData.backendFrameworks.split(',').map((tech, idx) => (
+                            <span key={idx} className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-lg text-sm font-semibold border border-purple-500/30">
                               {tech.trim()}
                             </span>
                           ))}
