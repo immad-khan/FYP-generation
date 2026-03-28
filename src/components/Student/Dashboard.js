@@ -10,7 +10,6 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [ideas, setIdeas] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(false);
   
   // Profile completion states
   const [checkingProfile, setCheckingProfile] = useState(true);
@@ -22,12 +21,17 @@ const Dashboard = () => {
   const [cgpa, setCgpa] = useState(user?.profile?.cgpa || '3.5');
   const [areaOfInterest, setAreaOfInterest] = useState(user?.profile?.area_of_interest || '');
 
-  // Project submission states
-  const [projectType, setProjectType] = useState('FYP'); // 'FYP' or 'Semester'
-  const [semesterCourseId, setSemesterCourseId] = useState('');
-  const [semesterCourses, setSemesterCourses] = useState([]);
-
   const isInterestEnabled = parseInt(semester) >= 6;
+
+  // Sync state if user profile is updated globally
+  useEffect(() => {
+    if (user?.profile) {
+      setDepartment(user.profile.department || 'Software Engineering');
+      setSemester(user.profile.current_semester || '7');
+      setCgpa(user.profile.cgpa || '3.5');
+      setAreaOfInterest(user.profile.area_of_interest || '');
+    }
+  }, [user?.profile]);
 
   // Check profile completion on mount
   useEffect(() => {
@@ -46,26 +50,6 @@ const Dashboard = () => {
     };
 
     checkProfileCompletion();
-  }, [user?.id]);
-
-  // Fetch semester courses on component mount
-  useEffect(() => {
-    const fetchCourses = async () => {
-      if (!user?.id) return;
-      try {
-        setLoadingCourses(true);
-        const courses = await studentAPI.getSemesterCourses(user.id);
-        setSemesterCourses(courses || []);
-        if (courses?.length > 0) {
-          setSemesterCourseId(courses[0].id);
-        }
-      } catch (error) {
-        console.error('Failed to fetch semester courses:', error);
-      } finally {
-        setLoadingCourses(false);
-      }
-    };
-    fetchCourses();
   }, [user?.id]);
 
   const generateIdeas = async () => {
@@ -100,16 +84,9 @@ const Dashboard = () => {
         return;
       }
 
-      // Validate semester selection for Semester projects
-      if (projectType === 'Semester' && !semesterCourseId) {
-        alert("Please select a semester course before submitting.");
-        return;
-      }
+      await studentAPI.saveIdea(user.id, idea.id);
       
-      await studentAPI.saveIdea(user.id, idea.id, projectType, semesterCourseId);
-      
-      const projectLabel = projectType === 'FYP' ? 'FYP' : 'Semester Course';
-      alert(`✅ ${projectLabel} project submitted for faculty review! Teachers can now see your submission.`);
+      alert(`✅ FYP project submitted for faculty review! Teachers can now see your submission.`);
     } catch (error) {
       console.error("Save error:", error);
       const errorMsg = error.response?.data?.error || error.message;
@@ -234,61 +211,6 @@ const Dashboard = () => {
                   className="w-full p-4 bg-[#1A1A2E] border border-gray-700/30 rounded-2xl text-white placeholder-gray-600 focus:border-cyan-500 outline-none transition-all disabled:opacity-20"
                 />
               </div>
-            </div>
-
-            {/* Project Type Selector */}
-            <div className="pt-4 border-t border-white/5">
-              <label className="block text-gray-400 font-bold text-xs uppercase tracking-widest mb-4">Project Type</label>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <button
-                  onClick={() => setProjectType('FYP')}
-                  className={`p-4 rounded-2xl border-2 transition-all font-bold uppercase text-xs tracking-wider ${
-                    projectType === 'FYP'
-                      ? 'border-pink-500 bg-pink-500/10 text-pink-400'
-                      : 'border-gray-700/30 bg-[#1A1A2E]/50 text-gray-400 hover:border-gray-500/50'
-                  }`}
-                >
-                  🎓 Final Year Project
-                </button>
-                <button
-                  onClick={() => setProjectType('Semester')}
-                  className={`p-4 rounded-2xl border-2 transition-all font-bold uppercase text-xs tracking-wider ${
-                    projectType === 'Semester'
-                      ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400'
-                      : 'border-gray-700/30 bg-[#1A1A2E]/50 text-gray-400 hover:border-gray-500/50'
-                  }`}
-                >
-                  📚 Semester Project
-                </button>
-              </div>
-
-              {/* Semester Course Selection */}
-              {projectType === 'Semester' && (
-                <div>
-                  <label className="block text-gray-400 font-bold text-xs uppercase tracking-widest mb-3">Select Course</label>
-                  {loadingCourses ? (
-                    <div className="w-full p-4 bg-[#1A1A2E] border border-gray-700/30 rounded-2xl text-gray-500 text-center">
-                      Loading courses...
-                    </div>
-                  ) : semesterCourses.length === 0 ? (
-                    <div className="w-full p-4 bg-[#1A1A2E] border border-gray-700/30 rounded-2xl text-gray-500 text-center">
-                      No semester courses found
-                    </div>
-                  ) : (
-                    <select
-                      value={semesterCourseId}
-                      onChange={(e) => setSemesterCourseId(e.target.value)}
-                      className="w-full p-4 bg-[#1A1A2E] border border-gray-700/30 rounded-2xl text-gray-300 focus:border-cyan-500 outline-none transition-all cursor-pointer"
-                    >
-                      {semesterCourses.map(course => (
-                        <option key={course.id} value={course.id}>
-                          {course.course_code} - {course.course_name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-              )}
             </div>
 
             <button
