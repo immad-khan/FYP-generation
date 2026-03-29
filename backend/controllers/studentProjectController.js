@@ -167,7 +167,7 @@ const studentProjectController = {
 
       // Get saved ideas to exclude them
       const [savedIdeas] = await pool.execute(
-        `SELECT title FROM saved_ideas WHERE student_id = ?`,
+        `SELECT i.title FROM saved_ideas si JOIN ideas i ON si.idea_id = i.id WHERE si.student_id = ?`,
         [student.id]
       );
       const excludedIdeasTitles = savedIdeas.map(idea => idea.title).join(', ');
