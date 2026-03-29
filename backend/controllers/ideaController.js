@@ -107,16 +107,37 @@ const ideaController = {
 
   saveIdea: async (req, res) => {
     try {
-      const { ideaId } = req.body;
+      let { id: ideaId, title, description, category, technologies, difficulty } = req.body;
       const projectType = 'FYP';
       const semesterCourseId = null;
       const userId = req.params.userId || req.body.userId;
       
-      console.log('🔹 SAVE IDEA REQUEST:', { userId, ideaId, projectType });
+      // Fallback if frontend sends `ideaId` directly
+      if (!ideaId && req.body.ideaId) {
+        ideaId = req.body.ideaId;
+      }
+      
+      console.log('🔹 SAVE IDEA REQUEST:', { userId, ideaId, projectType, title });
       
       if (!userId || !ideaId) {
         console.log('❌ Missing userId or ideaId');
         return res.status(400).json({ error: 'User ID and Idea ID are required' });
+      }
+
+      // Check if this is a newly generated AI idea that needs to be inserted into the ideas table first
+      if (typeof ideaId === 'string' && ideaId.startsWith('groq') && title) {
+        console.log('AI Idea detected. Saving to ideas table first...');
+        let stringTech = technologies;
+        if (Array.isArray(technologies)) {
+          stringTech = technologies.join(', ');
+        }
+        
+        const [ideaInsert] = await pool.execute(
+          'INSERT INTO ideas (title, description, category, technologies, difficulty) VALUES (?, ?, ?, ?, ?)',
+          [title, description || '', category || 'AI-Generated', stringTech || '', difficulty || 'Intermediate']
+        );
+        ideaId = ideaInsert.insertId;
+        console.log('New AI idea stored with ID:', ideaId);
       }
 
       // Get student_id from user_id
