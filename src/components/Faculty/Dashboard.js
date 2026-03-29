@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import FacultySidebar from './FacultySidebar';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
-import { facultyAPI, authAPI } from '../../services/api';
+import { facultyAPI, authAPI, studentAPI } from '../../services/api';
 
 const FacultyDashboard = () => {
   const { user, logout, updateUser } = useAuth();
@@ -14,6 +14,7 @@ const FacultyDashboard = () => {
   const [students, setStudents] = useState([]);
   const [savedIdeas, setSavedIdeas] = useState([]);
   const [selectedIdea, setSelectedIdea] = useState(null);
+  const [studentProjects, setStudentProjects] = useState([]);
   const [facultyProfile] = useState({
     name: user?.name || "Faculty Member",
     department: "Artificial Intelligence",
@@ -52,6 +53,23 @@ const FacultyDashboard = () => {
     
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchStudentHistory = async () => {
+      if (selectedIdea && selectedIdea.user_id) {
+        try {
+          const projects = await studentAPI.getProjects(selectedIdea.user_id);
+          setStudentProjects(Array.isArray(projects) ? projects : []);
+        } catch (err) {
+          console.error("Failed to fetch student projects:", err);
+          setStudentProjects([]);
+        }
+      } else {
+        setStudentProjects([]);
+      }
+    };
+    fetchStudentHistory();
+  }, [selectedIdea]);
 
   const handleUpdateStatus = async (savedId, status) => {
     try {
@@ -434,13 +452,13 @@ const FacultyDashboard = () => {
             {/* Idea Details Modal */}
             {selectedIdea && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-                <div className="bg-gradient-to-b from-slate-900 to-slate-950 w-full max-w-3xl rounded-2xl border border-cyan-500/40 shadow-2xl shadow-cyan-900/30 overflow-hidden animate-in fade-in zoom-in duration-300">
-                  <div className="p-6 border-b border-cyan-500/20 flex justify-between items-center bg-gradient-to-r from-cyan-600/10 to-blue-600/10">
+                <div className="bg-gradient-to-b from-slate-900 to-slate-950 w-full max-w-3xl max-h-[90vh] flex flex-col rounded-2xl border border-cyan-500/40 shadow-2xl shadow-cyan-900/30 overflow-hidden animate-in fade-in zoom-in duration-300">
+                  <div className="p-6 border-b border-cyan-500/20 flex justify-between items-center bg-gradient-to-r from-cyan-600/10 to-blue-600/10 shrink-0">
                     <div>
                       <h3 className="text-2xl font-bold text-cyan-300">Project Details</h3>
                       <p className="text-xs text-gray-400 mt-1">Review and manage idea submission</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setSelectedIdea(null)}
                       className="text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all"
                     >
@@ -449,8 +467,8 @@ const FacultyDashboard = () => {
                       </svg>
                     </button>
                   </div>
-                  
-                  <div className="p-8 space-y-6">
+
+                  <div className="p-8 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-widest text-cyan-400/70">Student</p>
                       <p className="text-2xl font-bold text-white">{selectedIdea.student_name}</p>
@@ -504,18 +522,32 @@ const FacultyDashboard = () => {
                         </span>
                       </div>
                     )}
-                  </div>
 
-                  <div className="p-6 bg-gradient-to-r from-slate-800/30 to-slate-900/30 border-t border-slate-600/30 flex gap-3">
-                    <button 
-                      onClick={() => handleUpdateStatus(selectedIdea.saved_id, 'Approved')}
-                      className="flex-1 group relative py-3 px-4 rounded-lg text-white font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:shadow-lg hover:shadow-green-500/30 transition-all overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <span className="relative flex items-center justify-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+                    {studentProjects.length > 0 && (
+                      <div className="pt-6 border-t border-slate-600/50 space-y-4">
+                        <p className="text-xs font-semibold uppercase tracking-widest text-cyan-400/70">Student's Past Projects</p>
+                        <div className="grid gap-3">
+                          {studentProjects.map(proj => (
+                            <div key={proj.id} className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <h4 className="text-white font-bold text-sm tracking-wide">{proj.project_name}</h4>
+                                  <p className="text-xs text-gray-400">{proj.course_name} (Sem {proj.semester_number})</p>
+                                </div>
+                              </div>
+                              <p className="text-xs text-gray-400 mb-3 leading-relaxed bg-[#1A1A2E]/50 p-2 rounded-lg">{proj.project_description}</p>
+                              <div className="flex flex-wrap gap-1">
+                                {[...(proj.languages ? proj.languages.split(',') : []), ...(proj.frontend_frameworks ? proj.frontend_frameworks.split(',') : []), ...(proj.backend_frameworks ? proj.backend_frameworks.split(',') : [])].filter(Boolean).slice(0, 5).map((tech, i) => (
+                                  <span key={i} className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-700/50 text-slate-300">
+                                    {tech.trim()}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                         Approve
                       </span>
                     </button>

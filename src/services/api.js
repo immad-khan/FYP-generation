@@ -87,10 +87,8 @@ export const studentAPI = {
   chatAboutIdea: (userId, payload) => withErrorHandling(api.post(`/students/${userId}/ideas/chat`, payload)),
   generateIdeas: (userId, criteria) => withErrorHandling(api.post(`/students/${userId}/ideas/generate`, criteria)),
   getSavedIdeas: (userId) => withErrorHandling(api.get(`/students/${userId}/ideas/saved`)),
-  saveIdea: (userId, ideaId) =>   
-    withErrorHandling(api.post(`/students/${userId}/ideas/save`, {
-      ideaId
-    })),
+  saveIdea: (userId, ideaData) =>
+    withErrorHandling(api.post(`/students/${userId}/ideas/save`, ideaData)),
   getSemesterCourses: (userId) => withErrorHandling(api.get(`/students/${userId}/courses`)),
   deleteSavedIdea: (ideaId) => withErrorHandling(api.delete(`/ideas/saved/${ideaId}`)),
   

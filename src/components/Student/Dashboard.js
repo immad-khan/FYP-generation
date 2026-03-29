@@ -89,7 +89,7 @@ const Dashboard = () => {
         return;
       }
 
-      await studentAPI.saveIdea(user.id, idea.id);
+      await studentAPI.saveIdea(user.id, idea);
       
       alert(`✅ FYP project submitted for faculty review! Teachers can now see your submission.`);
     } catch (error) {
