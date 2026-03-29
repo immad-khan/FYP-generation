@@ -62,6 +62,10 @@ const SemesterRecords = () => {
 
       setNewProject({ ...newProject, course_name: '', project_name: '', languages: '', frontend_frameworks: '', backend_frameworks: '', project_description: '' });
       fetchProjects();
+      
+      // Show success pop up
+      window.alert("Project Record Added Successfully!");
+      
     } catch (err) {
       setError('Failed to save project.');
     } finally {
@@ -113,11 +117,24 @@ const SemesterRecords = () => {
                 <label className="block text-gray-300 font-bold text-sm mb-3 uppercase">Course Name</label>
                 <input
                   type="text"
+                  list="course-options"
                   value={newProject.course_name}
                   onChange={(e) => setNewProject({ ...newProject, course_name: e.target.value })}
-                  placeholder="E.g. Web Development"
+                  placeholder="Select or type a course..."
                   className="w-full p-4 bg-[#1A1A2E] border border-gray-700/50 rounded-xl text-gray-300 focus:border-cyan-500 outline-none transition-all placeholder:text-gray-600"
                 />
+                <datalist id="course-options">
+                  <option value="Introduction to Programming" />
+                  <option value="Object Oriented Programming" />
+                  <option value="Information Security and Forensics" />
+                  <option value="Web Engineering" />
+                  <option value="Blockchain" />
+                  <option value="Mobile Application and Development" />
+                  <option value="Database" />
+                  <option value="Data Structures" />
+                  <option value="Software Engineering" />
+                  <option value="Software Requirement Engineering" />
+                </datalist>
               </div>
 
               <div>
@@ -135,33 +152,64 @@ const SemesterRecords = () => {
                 <label className="block text-gray-300 font-bold text-sm mb-3 uppercase">Languages</label>
                 <input
                   type="text"
+                  list="language-options"
                   value={newProject.languages}
                   onChange={(e) => setNewProject({ ...newProject, languages: e.target.value })}
                   placeholder="E.g. JavaScript, Python"
                   className="w-full p-4 bg-[#1A1A2E] border border-gray-700/50 rounded-xl text-gray-300 focus:border-cyan-500 outline-none transition-all placeholder:text-gray-600"
                 />
+                <datalist id="language-options">
+                  <option value="C" />
+                  <option value="C++" />
+                  <option value="Python" />
+                  <option value="Java" />
+                  <option value="JavaScript" />
+                  <option value="Rust" />
+                  <option value="Go" />
+                </datalist>
               </div>
 
               <div>
                 <label className="block text-gray-300 font-bold text-sm mb-3 uppercase">Frontend Frameworks</label>
                 <input
                   type="text"
+                  list="frontend-options"
                   value={newProject.frontend_frameworks}
                   onChange={(e) => setNewProject({ ...newProject, frontend_frameworks: e.target.value })}
                   placeholder="E.g. React, Vue (Optional)"
                   className="w-full p-4 bg-[#1A1A2E] border border-gray-700/50 rounded-xl text-gray-300 focus:border-cyan-500 outline-none transition-all placeholder:text-gray-600"
                 />
+                <datalist id="frontend-options">
+                  <option value="React" />
+                  <option value="Vue" />
+                  <option value="Angular" />
+                  <option value="Svelte" />
+                  <option value="Next.js" />
+                  <option value="HTML/CSS" />
+                  <option value="Tailwind CSS" />
+                  <option value="Bootstrap" />
+                </datalist>
               </div>
 
               <div>
                 <label className="block text-gray-300 font-bold text-sm mb-3 uppercase">Backend Frameworks</label>
                 <input
                   type="text"
+                  list="backend-options"
                   value={newProject.backend_frameworks}
                   onChange={(e) => setNewProject({ ...newProject, backend_frameworks: e.target.value })}
                   placeholder="E.g. Node.js, Express (Optional)"
                   className="w-full p-4 bg-[#1A1A2E] border border-gray-700/50 rounded-xl text-gray-300 focus:border-cyan-500 outline-none transition-all placeholder:text-gray-600"
                 />
+                <datalist id="backend-options">
+                  <option value="Node.js" />
+                  <option value="Express" />
+                  <option value="Django" />
+                  <option value="Flask" />
+                  <option value="Spring Boot" />
+                  <option value="Laravel" />
+                  <option value=".NET" />
+                </datalist>
               </div>
 
             </div>
@@ -199,20 +247,21 @@ const SemesterRecords = () => {
             ) : (
               <div className="space-y-4">
                 {projects.map((proj) => (
-                  <div key={proj.id} className="bg-[#1A1A2E] border border-white/5 p-4 rounded-xl flex justify-between items-center group hover:border-cyan-500/30 transition-all">
-                    <div>
-                      <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Semester {proj.semester_number} • {proj.course_name}</p>
-                      <h4 className="text-white font-bold text-lg">{proj.project_name}</h4>
-                      <p className="text-gray-500 text-sm mt-1 mb-2 line-clamp-2">{proj.project_description}</p>
-                      <div className="flex gap-2">
-                        {proj.languages && <span className="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded text-xs border border-blue-500/30">Lang: {proj.languages}</span>}
-                        {proj.frontend_frameworks && <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded text-xs border border-cyan-500/30">Front: {proj.frontend_frameworks}</span>}
-                        {proj.backend_frameworks && <span className="bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded text-xs border border-purple-500/30">Back: {proj.backend_frameworks}</span>}
+                  <div key={proj.id} className="bg-[#1A1A2E] border border-white/5 p-4 rounded-xl flex justify-between items-center group hover:border-cyan-500/30 transition-all gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1.5">
+                        <span className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap">Sem {proj.semester_number}</span>
+                        <h4 className="text-white font-bold text-base truncate">{proj.course_name} — {proj.project_name}</h4>
+                      </div>
+                      <div className="text-sm truncate">
+                        <span className="text-gray-300 font-medium">Stack:</span> <span className="text-cyan-400/80">{[proj.languages, proj.frontend_frameworks, proj.backend_frameworks].filter(Boolean).join(', ') || 'Not specified'}</span>
+                        <span className="text-gray-600 mx-2">|</span> 
+                        <span className="text-gray-400 italic truncate">{proj.project_description || 'No description provided.'}</span>
                       </div>
                     </div>
                     <button
                       onClick={() => removeProject(proj.id)}
-                      className="text-red-500/50 hover:text-red-500 p-2 hover:bg-red-500/10 rounded-lg transition-all"
+                      className="text-red-500/50 hover:text-red-500 p-2 hover:bg-red-500/10 rounded-lg transition-all shrink-0"
                     >
                       Delete
                     </button>

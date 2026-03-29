@@ -31,7 +31,7 @@ const studentProjectController = {
       );
 
       console.log('✅ FETCHED', projects.length, 'PROJECTS');
-      res.json(projects);
+      res.json({ projects });
     } catch (error) {
       console.error('❌ GET PROJECTS ERROR:', error.message);
       res.status(500).json({ error: error.message });
@@ -44,10 +44,10 @@ const studentProjectController = {
       const userId = req.params.userId;
         const { semesterNumber, courseCode, courseName, projectName, projectDescription, languages, frontendFrameworks, backendFrameworks } = req.body;
 
-        console.log('🔹 ADDING PROJECT FOR USER:', userId, { semesterNumber, courseCode, projectName });
+        console.log('🔹 ADDING PROJECT FOR USER:', userId, { semesterNumber, courseCode, courseName, projectName });
 
-        if (!semesterNumber || !courseCode || !courseName || !projectName || !projectDescription || !languages) {
-          return res.status(400).json({ error: 'All fields are required' });
+        if (!semesterNumber || !courseName || !projectName) {
+          return res.status(400).json({ error: 'Core fields (semesterNumber, courseName, projectName) are required' });
         }
 
         const studentId = await ensureStudentRecord(userId);
@@ -64,7 +64,8 @@ const studentProjectController = {
            frontend_frameworks = VALUES(frontend_frameworks),
            backend_frameworks = VALUES(backend_frameworks),
            updated_at = NOW()`,
-          [studentId, semesterNumber, courseCode, courseName, projectName, projectDescription, languages, frontendFrameworks || '', backendFrameworks || '']
+          [studentId, semesterNumber, courseCode, courseName, projectName, projectDescription || '', languages || '', frontendFrameworks || '', backendFrameworks || '']
+        );
       res.json({ success: true, message: 'Project saved successfully', projectId: result.insertId });
     } catch (error) {
       console.error('❌ ADD PROJECT ERROR:', error.message);
@@ -111,16 +112,20 @@ const studentProjectController = {
       );
 
       const completedSemesters = projectSemesters.map(row => row.semester_number);
-      // Require at least 1 project for each semester up to currentSemester - 1
-      const requiredCount = Math.max(1, currentSemester - 1);
-      const isComplete = completedSemesters.length >= requiredCount;
+      // Require at least 6 projects in total
+      const [totalProjects] = await pool.execute(
+        `SELECT COUNT(*) as count FROM student_projects WHERE student_id = ?`,
+        [studentId]
+      );
+      const totalCount = totalProjects[0].count;
+      const isComplete = totalCount >= 6;
 
-      console.log('✅ PROFILE CHECK - Completed semesters:', completedSemesters);
+      console.log('✅ PROFILE CHECK - Completed semesters:', completedSemesters, 'Total Projects:', totalCount);
       res.json({
         isComplete,
         completedSemesters,
         currentSemester,
-        totalProjectCount: projectSemesters.length
+        totalProjectCount: totalCount
       });
     } catch (error) {
       console.error('❌ PROFILE CHECK ERROR:', error.message);
@@ -153,12 +158,21 @@ const studentProjectController = {
         [student.id]
       );
 
-      if (projects.length === 0) {
+      if (projects.length < 6) {
         return res.status(400).json({
-          error: 'No projects found. Please complete your profile first.',
+          error: 'At least 6 projects are required to generate ideas. Please add more projects.',      
           code: 'PROFILE_INCOMPLETE'
         });
       }
+
+      // Get saved ideas to exclude them
+      const [savedIdeas] = await pool.execute(
+        `SELECT title FROM saved_ideas WHERE student_id = ?`,
+        [student.id]
+      );
+      const excludedIdeasTitles = savedIdeas.map(idea => idea.title).join(', ');
+      
+      const excludedContext = excludedIdeasTitles ? `\nDO NOT suggest any of these previously saved ideas: ${excludedIdeasTitles}\n` : '';
 
       // Build context from projects
       let projectContext = 'Student Project History:\n\n';
@@ -170,7 +184,15 @@ const studentProjectController = {
           projectContext += `- Languages: ${proj.languages}\n`;
           projectContext += `- Frontend: ${proj.frontend_frameworks}\n`;
           projectContext += `- Backend: ${proj.backend_frameworks}\n\n`;
+      });
+
+      const interestContext = student.area_of_interest ? `\nStudent's Stated Interests:\n${student.area_of_interest}\n` : '';
+
+      const prompt = `Based on the following student history, suggest 3 highly relevant and innovative Final Year Project (FYP) ideas:
+
+${projectContext}
 ${interestContext}
+${excludedContext}
 
 For each FYP idea, provide:
 1. Project Title

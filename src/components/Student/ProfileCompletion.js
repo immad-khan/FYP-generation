@@ -158,8 +158,8 @@ const ProfileCompletion = ({ userId, onComplete }) => {
 
   const handleCompleteProfile = async () => {
     try {
-      if (projects.length === 0) {
-        setError('Please add at least one semester project before completing your profile');
+      if (projects.length < 6) {
+        setError('Please add at least 6 semester projects before completing your profile');
         return;
       }
       onComplete();
@@ -291,7 +291,7 @@ const ProfileCompletion = ({ userId, onComplete }) => {
               </Button>
               <Button
                 onClick={handleCompleteProfile}
-                disabled={projects.length === 0}
+                disabled={projects.length < 6}
                 className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white py-6 text-lg font-bold disabled:opacity-50"
               >
                 <CheckCircle2 size={20} className="mr-2" />
@@ -405,13 +405,25 @@ const ProfileCompletion = ({ userId, onComplete }) => {
                     <div>
                       <label className="block text-gray-300 font-semibold mb-3">Course Name *</label>
                       <Input
-                        type="text"
+                        list="pb-course-options"
                         name="courseName"
                         value={formData.courseName}
                         onChange={handleInputChange}
-                        placeholder="E.g., Web Development"
+                        placeholder="Select or type a course..."
                         className="bg-[#1A1A2E] border-white/10 text-white placeholder-gray-600 h-12"
                       />
+                      <datalist id="pb-course-options">
+                        <option value="Introduction to Programming" />
+                        <option value="Object Oriented Programming" />
+                        <option value="Information Security and Forensics" />
+                        <option value="Web Engineering" />
+                        <option value="Blockchain" />
+                        <option value="Mobile Application and Development" />
+                        <option value="Database" />
+                        <option value="Data Structures" />
+                        <option value="Software Engineering" />
+                        <option value="Software Requirement Engineering" />
+                      </datalist>
                     </div>
                   </div>
 
@@ -419,35 +431,61 @@ const ProfileCompletion = ({ userId, onComplete }) => {
                     <div>
                       <label className="block text-gray-300 font-semibold mb-3">Languages</label>
                       <Input
-                        type="text"
+                        list="pb-language-options"
                         name="languages"
                         value={formData.languages}
                         onChange={handleInputChange}
-                        placeholder="E.g., Python, TS"
+                        placeholder="E.g., Python, C++"
                         className="bg-[#1A1A2E] border-white/10 text-white placeholder-gray-600 h-12"
                       />
+                      <datalist id="pb-language-options">
+                        <option value="C" />
+                        <option value="C++" />
+                        <option value="Python" />
+                        <option value="Java" />
+                        <option value="JavaScript" />
+                        <option value="Rust" />
+                        <option value="Go" />
+                      </datalist>
                     </div>
                     <div>
                       <label className="block text-gray-300 font-semibold mb-3">Frontend</label>
                       <Input
-                        type="text"
+                        list="pb-frontend-options"
                         name="frontendFrameworks"
                         value={formData.frontendFrameworks}
                         onChange={handleInputChange}
                         placeholder="E.g., React, Vue"
                         className="bg-[#1A1A2E] border-white/10 text-white placeholder-gray-600 h-12"
                       />
+                      <datalist id="pb-frontend-options">
+                        <option value="React" />
+                        <option value="Vue" />
+                        <option value="Angular" />
+                        <option value="Svelte" />
+                        <option value="Next.js" />
+                        <option value="HTML/CSS" />
+                      </datalist>
                     </div>
                     <div>
                       <label className="block text-gray-300 font-semibold mb-3">Backend</label>
                       <Input
-                        type="text"
+                        list="pb-backend-options"
                         name="backendFrameworks"
                         value={formData.backendFrameworks}
                         onChange={handleInputChange}
-                        placeholder="E.g., Node, Django"
+                        placeholder="E.g., Django, Node"
                         className="bg-[#1A1A2E] border-white/10 text-white placeholder-gray-600 h-12"
                       />
+                      <datalist id="pb-backend-options">
+                        <option value="Node.js" />
+                        <option value="Express" />
+                        <option value="Django" />
+                        <option value="Flask" />
+                        <option value="Spring Boot" />
+                        <option value="Laravel" />
+                        <option value=".NET" />
+                      </datalist>
                     </div>
                   </div>
                 </div>
