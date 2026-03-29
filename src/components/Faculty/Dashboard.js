@@ -548,6 +548,18 @@ const FacultyDashboard = () => {
                         </div>
                       </div>
                     )}
+                  </div>
+
+                  <div className="p-6 bg-gradient-to-r from-slate-800/30 to-slate-900/30 border-t border-slate-600/30 flex gap-3 shrink-0">
+                    <button
+                      onClick={() => handleUpdateStatus(selectedIdea.saved_id, 'Approved')}
+                      className="flex-1 group relative py-3 px-4 rounded-lg text-white font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:shadow-lg hover:shadow-green-500/30 transition-all overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <span className="relative flex items-center justify-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
                         Approve
                       </span>
                     </button>
