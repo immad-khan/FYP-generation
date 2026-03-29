@@ -194,12 +194,7 @@ ${projectContext}
 ${interestContext}
 ${excludedContext}
 
-For each FYP idea, provide:
-1. Project Title
-2. Detailed Description (2-3 sentences)
-3. Key Technologies to use
-4. Difficulty Level (Beginner/Intermediate/Advanced)
-5. Why it's a good fit for this student (based on their history)
+Please format each idea STRICTLY as follows:\n\nIdea X:\nTitle: [Project Title]\nDescription: [Detailed Description (2-3 sentences)]\nTechnologies: [Comma separated technologies]\nDifficulty: [Beginner/Intermediate/Advanced]\nWhy: [Why its a good fit]
 
 Format each idea clearly and make them progressively more complex. They should leverage the student's existing knowledge and push them slightly beyond their current skill level.`;
 
@@ -208,18 +203,18 @@ Format each idea clearly and make them progressively more complex. They should l
       const response = await axios.post(
         'https://api.groq.com/openai/v1/chat/completions',
         {
-          model: 'mixtral-8x7b-32768',
+          model: 'llama-3.3-70b-versatile',
           messages: [
             {
               role: 'system',
-              content: 'You are an expert FYP advisor. Generate innovative project ideas tailored to the student.'
+              content: 'You are an expert FYP advisor. Generate highly innovative, unique, and completely novel project ideas tailored to the student. Never repeat common cliches. Ensure extreme variety every time.'
             },
             {
               role: 'user',
               content: prompt
             }
           ],
-          temperature: 0.7,
+          temperature: 0.9,
           max_tokens: 2000
         },
         {
