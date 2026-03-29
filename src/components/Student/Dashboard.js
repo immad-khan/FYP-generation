@@ -65,8 +65,7 @@ const Dashboard = () => {
       const response = await studentAPI.generateIdeasWithHistory(user.id);
       setIdeas(prev => [...prev, ...(response.ideas || [])]);
     } catch (error) {
-      console.error("Generation failed:", error);
-      // Fallback to traditional generation if Groq fails
+      console.error("Generation failed:", error);      alert("Generation failed!: " + JSON.stringify(error.response?.data || error.message));      // Fallback to traditional generation if Groq fails
       try {
         const fallbackResponse = await studentAPI.generateIdeas(user.id, {
           department,
@@ -287,7 +286,8 @@ const Dashboard = () => {
                     
                     <div className="flex flex-wrap gap-2 mb-6">
                       {(() => {
-                        const techList = idea.technologies || (typeof idea.tags === 'string' ? idea.tags.split(',') : idea.tags) || [];
+                        let techStr = idea.technologies || idea.tags || '';
+                        const techList = typeof techStr === 'string' ? techStr.split(',') : (Array.isArray(techStr) ? techStr : []);
                         return techList.map((tech, i) => {
                           const techLabel = typeof tech === 'string' ? tech.trim() : tech;
                           return (
