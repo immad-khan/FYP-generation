@@ -35,6 +35,18 @@ const SavedIdeas = () => {
     }
   };
 
+  const handleRemoveIdea = async (ideaId) => {
+    if (!window.confirm("Are you sure you want to remove this saved idea?")) return;
+    try {
+      await studentAPI.deleteSavedIdea(ideaId);
+      setSavedIdeas(prevIdeas => prevIdeas.filter(idea => idea.id !== ideaId));
+      alert("Idea removed successfully.");
+    } catch (error) {
+      console.error('Error removing idea:', error);
+      alert("Failed to remove idea. Please try again.");
+    }
+  };
+
   const filteredIdeas = (Array.isArray(savedIdeas) ? savedIdeas : []).filter(idea => {
     const matchesSearch = !searchQuery || 
       idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -128,7 +140,12 @@ const SavedIdeas = () => {
                 </div>
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
                    <span className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Added: {new Date(idea.saved_at || idea.savedAt).toLocaleDateString()}</span>
-                   <button className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition-colors py-1 px-3 bg-red-500/10 rounded-lg">Remove</button>
+                   <button 
+                     onClick={() => handleRemoveIdea(idea.id)} 
+                     className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition-colors py-1 px-3 bg-red-500/10 rounded-lg"
+                   >
+                     Remove
+                   </button>
                 </div>
               </div>
             ))}
