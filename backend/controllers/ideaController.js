@@ -198,10 +198,15 @@ const ideaController = {
       console.log('🔹 FETCHING ALL SAVED IDEAS FOR TEACHER');
       const { projectType } = req.query; // Optional filter: 'FYP' or 'Semester'
       
-      let query = `SELECT i.*, si.saved_at, u.full_name as student_name, u.id as user_id, si.id as saved_id,
-                   JOIN users u ON s.user_id = u.id
-                   LEFT JOIN semester_records sr ON si.semester_course_id = sr.id`;
-      
+      let query = `SELECT i.*, si.saved_at, u.full_name as student_name, u.id as user_id, si.id as saved_id, si.project_type,
+           COALESCE(si.status, 'Pending') as status,
+           s.cgpa, s.reg_number, s.department,
+           sr.course_code, sr.course_name
+           FROM saved_ideas si
+           JOIN ideas i ON si.idea_id = i.id
+           JOIN students s ON si.student_id = s.id
+           JOIN users u ON s.user_id = u.id
+           LEFT JOIN semester_records sr ON si.semester_course_id = sr.id`;
       let params = [];
       
       if (projectType && ['FYP', 'Semester'].includes(projectType)) {

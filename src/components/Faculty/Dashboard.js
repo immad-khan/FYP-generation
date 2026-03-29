@@ -413,9 +413,16 @@ const FacultyDashboard = () => {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-pink-400/80 mb-3 font-medium">
-                          👤 {idea.student_name}
-                        </p>
+                        <div className="flex items-center gap-2 mb-3">
+                          <p className="text-xs text-pink-400/80 font-medium">
+                            ðŸ‘¤ {idea.student_name}
+                          </p>
+                          {idea.cgpa && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                              CGPA: {idea.cgpa}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-300 mb-4 line-clamp-2">{idea.description.substring(0, 120)}...</p>
                         <div className="flex flex-wrap gap-2 mb-4">
                           {idea.technologies && idea.technologies.split(',').slice(0, 3).map((tag, i) => (
@@ -471,7 +478,25 @@ const FacultyDashboard = () => {
                   <div className="p-8 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-widest text-cyan-400/70">Student</p>
-                      <p className="text-2xl font-bold text-white">{selectedIdea.student_name}</p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <p className="text-2xl font-bold text-white">{selectedIdea.student_name}</p>
+                        {selectedIdea.reg_number && (
+                          <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium border border-slate-700">
+                            {selectedIdea.reg_number}
+                          </span>
+                        )}
+                        {selectedIdea.department && (
+                          <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium border border-slate-700">
+                            {selectedIdea.department}
+                          </span>
+                        )}
+                        {selectedIdea.cgpa && (
+                          <span className="px-3 py-1 rounded-full bg-cyan-900/40 text-cyan-300 text-xs font-semibold border border-cyan-800/50 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></span>
+                            CGPA: {selectedIdea.cgpa}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="space-y-2">
