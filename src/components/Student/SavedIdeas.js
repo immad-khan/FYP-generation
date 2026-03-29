@@ -35,11 +35,11 @@ const SavedIdeas = () => {
     }
   };
 
-  const handleRemoveIdea = async (ideaId) => {
+  const handleRemoveIdea = async (savedId) => {
     if (!window.confirm("Are you sure you want to remove this saved idea?")) return;
     try {
-      await studentAPI.deleteSavedIdea(ideaId);
-      setSavedIdeas(prevIdeas => prevIdeas.filter(idea => idea.id !== ideaId));
+      await studentAPI.deleteSavedIdea(savedId);
+      setSavedIdeas(prevIdeas => prevIdeas.filter(idea => idea.saved_id !== savedId));
       alert("Idea removed successfully.");
     } catch (error) {
       console.error('Error removing idea:', error);
@@ -107,7 +107,7 @@ const SavedIdeas = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredIdeas.map((idea) => (
-              <div key={idea.id} className="bg-[#242444] p-6 rounded-3xl border border-white/5 hover:border-pink-500/30 transition-all group shadow-2xl overflow-hidden relative">
+              <div key={idea.saved_id} className="bg-[#242444] p-6 rounded-3xl border border-white/5 hover:border-pink-500/30 transition-all group shadow-2xl overflow-hidden relative">
                 <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {/* Difficulty Badge */}
@@ -140,8 +140,8 @@ const SavedIdeas = () => {
                 </div>
                 <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
                    <span className="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Added: {new Date(idea.saved_at || idea.savedAt).toLocaleDateString()}</span>
-                   <button 
-                     onClick={() => handleRemoveIdea(idea.id)} 
+                   <button
+                     onClick={() => handleRemoveIdea(idea.saved_id)}
                      className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition-colors py-1 px-3 bg-red-500/10 rounded-lg"
                    >
                      Remove
