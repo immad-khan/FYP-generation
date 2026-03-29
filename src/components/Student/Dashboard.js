@@ -4,13 +4,19 @@ import { useAuth } from '../../contexts/AuthContext';
 import { studentAPI } from '../../services/api';
 import ProfileCompletion from './ProfileCompletion';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { Share2 } from 'lucide-react';
+import { Share2, MessageSquare, X, Send } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [ideas, setIdeas] = useState([]);
-  
+
+  // Chat states
+  const [chatIdea, setChatIdea] = useState(null);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+
   // Profile completion states
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [profileComplete, setProfileComplete] = useState(false);
@@ -57,7 +63,7 @@ const Dashboard = () => {
     try {
       // Use Groq AI generation with student's project history
       const response = await studentAPI.generateIdeasWithHistory(user.id);
-      setIdeas(response.ideas || []);
+      setIdeas(prev => [...prev, ...(response.ideas || [])]);
     } catch (error) {
       console.error("Generation failed:", error);
       // Fallback to traditional generation if Groq fails
@@ -68,7 +74,7 @@ const Dashboard = () => {
           cgpa,
           interests: areaOfInterest
         });
-        setIdeas(fallbackResponse.ideas || []);
+        setIdeas(prev => [...prev, ...(fallbackResponse.ideas || [])]);
       } catch (fallbackError) {
         alert("Failed to generate ideas. Please try again.");
       }
@@ -96,6 +102,29 @@ const Dashboard = () => {
 
   const handleProfileComplete = () => {
     setProfileComplete(true);
+  };
+
+  const handleSendMessage = async () => {
+    if (!chatMessage.trim()) return;
+    const msg = chatMessage;
+    setChatMessage('');
+    const newHistory = [...chatHistory, { role: 'user', content: msg }];
+    setChatHistory(newHistory);
+    setChatLoading(true);
+    
+    try {
+      const response = await studentAPI.chatAboutIdea(user.id, {
+        message: msg,
+        history: chatHistory,
+        ideaContext: `Title: ${chatIdea.title}\nDescription: ${chatIdea.description}\nTechnologies: ${Array.isArray(chatIdea.technologies) ? chatIdea.technologies.join(', ') : chatIdea.technologies}\nDifficulty: ${chatIdea.difficulty}`
+      });
+      setChatHistory([...newHistory, { role: 'assistant', content: response.reply }]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      alert('Failed to get response from AI.');
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   // Show loading state while checking profile
@@ -273,10 +302,13 @@ const Dashboard = () => {
                         onClick={() => saveIdea(idea)}
                         className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-[10px] font-bold uppercase transition-all tracking-widest shadow-inner shadow-black/20"
                       >
-                         Add to Interest List
+                         Send to Teacher
                       </button>
-                      <button className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-gray-500 hover:text-white transition-all">
-                        <Share2 size={16} />
+                      <button 
+                        onClick={() => { setChatIdea(idea); setChatHistory([]); }}
+                        className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-[10px] font-bold uppercase transition-all tracking-widest shadow-inner shadow-black/20 flex items-center justify-center gap-2"
+                      >
+                         <MessageSquare size={14} /> Discuss with AI
                       </button>
                     </div>
                   </div>
@@ -285,6 +317,80 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* AI Chat Modal */}
+        {chatIdea && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-[#1A1A2E] w-full max-w-2xl rounded-3xl border border-white/10 shadow-2xl flex flex-col h-[600px] max-h-[90vh]">
+              {/* Header */}
+              <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#242444] rounded-t-3xl">
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <MessageSquare size={20} className="text-cyan-400" />
+                    Discuss with AI
+                  </h3>
+                  <p className="text-gray-400 text-xs mt-1">Idea: {chatIdea.title}</p>
+                </div>
+                <button 
+                  onClick={() => setChatIdea(null)}
+                  className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-all"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Chat History */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="bg-[#242444] p-4 rounded-2xl border border-white/5 text-gray-300 text-sm">
+                  Hi! I'm your AI FYP Assistant. You selected <strong>{chatIdea.title}</strong>. 
+                  What would you like to know? I can help you with the architecture, implementation steps, or potential challenges.
+                </div>
+                {chatHistory.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`p-4 rounded-2xl max-w-[80%] text-sm ${
+                      msg.role === 'user' 
+                        ? 'bg-cyan-600 border border-cyan-500 text-white rounded-br-none' 
+                        : 'bg-[#242444] border border-white/5 text-gray-300 rounded-bl-none'
+                    }`}>
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div className="flex justify-start">
+                    <div className="p-4 rounded-2xl max-w-[80%] bg-[#242444] border border-white/5 text-gray-300 rounded-bl-none flex gap-2">
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce"></span>
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{animationDelay: '0.2s'}}></span>
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{animationDelay: '0.4s'}}></span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Input Area */}
+              <div className="p-4 bg-[#242444] rounded-b-3xl border-t border-white/5">
+                <div className="flex gap-2">
+                  <input 
+                    type="text"
+                    value={chatMessage}
+                    onChange={(e) => setChatMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                    placeholder="Ask about this project..."
+                    className="flex-1 bg-[#1A1A2E] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
+                  />
+                  <button 
+                    onClick={handleSendMessage}
+                    disabled={chatLoading || !chatMessage.trim()}
+                    className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 disabled:bg-cyan-600/50 disabled:cursor-not-allowed rounded-xl text-white font-bold transition-all flex items-center justify-center"
+                  >
+                    <Send size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );

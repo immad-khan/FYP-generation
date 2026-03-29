@@ -79,6 +79,7 @@ app.get('/api/students', authenticateToken, studentController.getAllStudents);
 
 
 app.post('/api/students/:userId/ideas/generate', authenticateToken, ideaController.generateIdeas);
+app.post('/api/students/:userId/ideas/chat', authenticateToken, ideaController.chatAboutIdea);
 app.get('/api/students/:userId/ideas/saved', authenticateToken, ideaController.getSavedIdeas);
 app.post('/api/students/:userId/ideas/save', authenticateToken, ideaController.saveIdea);
 app.get('/api/students/:userId/courses', authenticateToken, ideaController.getSemesterCourses);

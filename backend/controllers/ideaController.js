@@ -1,3 +1,4 @@
+const axios = require('axios');
 const pool = require('../config/database');
 
 const ideaController = {
@@ -227,6 +228,43 @@ const ideaController = {
       );
       res.json({ success: true, message: 'Idea removed from saved list' });
     } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  chatAboutIdea: async (req, res) => {
+    try {
+      const { message, history, ideaContext } = req.body;
+      
+      const messages = [
+        {
+          role: 'system',
+          content: 'You are an expert FYP advisor.\nYou are discussing the following project idea with a student:\n' + ideaContext + '\nProvide helpful, detailed, and encouraging guidance on how to create, architect, and implement this idea.'
+        },
+        ...(history || []),
+        { role: 'user', content: message }
+      ];
+
+      const response = await axios.post(
+        'https://api.groq.com/openai/v1/chat/completions',
+        {
+          model: 'mixtral-8x7b-32768',
+          messages,
+          temperature: 0.7,
+          max_tokens: 1000
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const reply = response.data.choices[0].message.content;
+      res.json({ reply });
+    } catch (error) {
+      console.error('Chat error:', error);
       res.status(500).json({ error: error.message });
     }
   }

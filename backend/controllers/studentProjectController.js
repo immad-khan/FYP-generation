@@ -188,7 +188,7 @@ const studentProjectController = {
 
       const interestContext = student.area_of_interest ? `\nStudent's Stated Interests:\n${student.area_of_interest}\n` : '';
 
-      const prompt = `Based on the following student history, suggest 3 highly relevant and innovative Final Year Project (FYP) ideas:
+      const prompt = `Based on the following student history, suggest 2 highly relevant and innovative Final Year Project (FYP) ideas:
 
 ${projectContext}
 ${interestContext}

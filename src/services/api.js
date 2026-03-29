@@ -84,6 +84,7 @@ export const authAPI = {
 export const studentAPI = {
   getProfile: (userId) => withErrorHandling(api.get(`/students/${userId}/profile`)),
   updateProfile: (userId, profileData) => withErrorHandling(api.put(`/students/${userId}/profile`, profileData)),
+  chatAboutIdea: (userId, payload) => withErrorHandling(api.post(`/students/${userId}/ideas/chat`, payload)),
   generateIdeas: (userId, criteria) => withErrorHandling(api.post(`/students/${userId}/ideas/generate`, criteria)),
   getSavedIdeas: (userId) => withErrorHandling(api.get(`/students/${userId}/ideas/saved`)),
   saveIdea: (userId, ideaId) =>   
