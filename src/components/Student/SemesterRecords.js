@@ -12,7 +12,7 @@ const SemesterRecords = () => {
 
   const [newProject, setNewProject] = useState({
     semesterNumber: '1',
-    course_code: '...', // Default or can be empty
+    course_code: '',
     course_name: '',
     project_name: '',
     languages: '',
@@ -41,8 +41,8 @@ const SemesterRecords = () => {
   };
 
   const handleAddProject = async () => {
-    if (!newProject.course_name || !newProject.project_name || !newProject.languages || !newProject.project_description) {
-      setError('Course name, Project name, Languages, and Description are required!');
+    if (!newProject.course_code || !newProject.course_name || !newProject.project_name || !newProject.languages || !newProject.project_description) {
+      setError('Course code, Course name, Project name, Languages, and Description are required!');
       return;
     }
 
@@ -60,7 +60,7 @@ const SemesterRecords = () => {
         projectDescription: newProject.project_description,
       });
 
-      setNewProject({ ...newProject, course_name: '', project_name: '', languages: '', frontend_frameworks: '', backend_frameworks: '', project_description: '' });
+      setNewProject({ ...newProject, course_code: '', course_name: '', project_name: '', languages: '', frontend_frameworks: '', backend_frameworks: '', project_description: '' });
       fetchProjects();
       
       // Show success pop up
@@ -111,6 +111,17 @@ const SemesterRecords = () => {
                     <option key={s} value={s}>Semester {s}</option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-gray-300 font-bold text-sm mb-3 uppercase">Course Code</label>
+                <input
+                  type="text"
+                  value={newProject.course_code}
+                  onChange={(e) => setNewProject({ ...newProject, course_code: e.target.value })}
+                  placeholder="E.g. CS101"
+                  className="w-full p-4 bg-[#1A1A2E] border border-gray-700/50 rounded-xl text-gray-300 focus:border-cyan-500 outline-none transition-all placeholder:text-gray-600"
+                />
               </div>
 
               <div>
