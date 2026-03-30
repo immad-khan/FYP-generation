@@ -27,9 +27,7 @@ const addStudent = async(req , res) =>{
             success: true, data: result
           });
     }catch(error){
-        
       res.status(500).json({ error: error.message });
     }
 };
-
 module.exports = {addStudent};

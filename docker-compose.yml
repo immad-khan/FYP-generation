@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: fyp-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: my_secure_password
+      MYSQL_DATABASE: fyp_generator
+    ports:
+      - "3306:3306"
+    volumes:
+      # Automatically initialize database using your SQL files
+      - ./fyp_generator.sql:/docker-entrypoint-initdb.d/1_fyp_generator.sql
+      - ./add_status_column.sql:/docker-entrypoint-initdb.d/2_add_status_column.sql
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pmy_secure_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fyp-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      # Connect the backend directly to the MySQL container
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=my_secure_password
+      - DB_NAME=fyp_generator
+      - PORT=5000
+      - JWT_SECRET=super_secret_jwt_key_123
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fyp-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # Make sure the frontend connects to localhost since the browser runs the code locally
+      - REACT_APP_API_URL=http://localhost:5000/api
+    depends_on:
+      - backend
+    # Needed for React development server in Docker
+    stdin_open: true
+    tty: true
+
+volumes:
+  db_data:

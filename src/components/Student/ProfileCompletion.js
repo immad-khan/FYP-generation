@@ -7,7 +7,7 @@ import { Textarea } from '../ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorDisplay from '../common/ErrorDisplay';
-import { Trash2, Plus, CheckCircle2, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Trash2, Plus, CheckCircle2, ChevronRight, ChevronLeft, SkipForward } from 'lucide-react';
 
 const ProfileCompletion = ({ userId, onComplete }) => {
   const [projects, setProjects] = useState([]);
@@ -282,6 +282,13 @@ const ProfileCompletion = ({ userId, onComplete }) => {
             </div>
 
             <div className="flex gap-4 mb-8">
+              <Button
+                onClick={onComplete}
+                className="flex-[0.5] bg-[#1A1A2E] border-white/10 text-gray-300 hover:text-white py-6 text-lg font-bold shadow-md"
+              >
+                <SkipForward size={20} className="mr-2" />
+                Skip Let Me Explore
+              </Button>
               <Button
                 onClick={() => setShowProjectsList(false)}
                 className="flex-1 bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/30 text-white py-6 text-lg font-bold"
@@ -563,6 +570,16 @@ const ProfileCompletion = ({ userId, onComplete }) => {
 
               {/* Navigation Buttons */}
               <div className="flex gap-4 mt-8 pt-6 border-t border-white/5">
+                <Button
+                  onClick={onComplete}
+                  variant="outline"
+                  className="bg-transparent border-white/10 text-gray-400 hover:text-white py-6 px-4"
+                  title="Skip to Dashboard"
+                >
+                  <SkipForward size={20} className="mr-2 hidden sm:block" />
+                  Skip
+                </Button>
+
                 {currentStep !== 'semester' && (
                   <Button
                     onClick={handlePrevStep}
